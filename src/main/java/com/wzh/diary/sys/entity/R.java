@@ -27,7 +27,12 @@ public class R<T> implements Serializable {
         r.code = 20000;
         return r;
     }
-
+    public static <T> R<T> successWithMsg(String msg) {
+        R<T> r = new R<T>();
+        r.code = 20000;
+        r.msg = msg;
+        return r;
+    }
     public static <T> R<T> error(String msg) {
         R r = new R();
         r.msg = msg;

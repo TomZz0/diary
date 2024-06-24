@@ -3,6 +3,8 @@ package com.wzh.diary.sys.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -14,12 +16,14 @@ import java.util.Date;
  * @author wzh
  * @since 2023-09-12
  */
-@TableName("D_USER")
-public class User implements Serializable {
+@Data
+
+public class User  implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @TableId(value = "id",type = IdType.AUTO)
-    private Integer id;
+
+    @TableId(type=IdType.AUTO)
+    private Long id;
 
     private String username;
 
@@ -31,11 +35,11 @@ public class User implements Serializable {
 
     private String avatarUrl;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
     public String getUsername() {

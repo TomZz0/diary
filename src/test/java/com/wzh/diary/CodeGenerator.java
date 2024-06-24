@@ -19,16 +19,14 @@ public class CodeGenerator {
         String username="MY_USER";
         String password = "MY_USER";
         String moduleName = "sys";
-        String mapperLocation = "D:\\develop\\IDEACodes\\diary\\src\\main\\resources\\mapper"+moduleName;
-        String tables = "D_USER,DIARY";
+        String mapperLocation = "D:\\develop\\IDEACodes\\diary\\src\\main\\resources\\com\\wzh\\diary\\"+moduleName+"\\mapper";
+        String tables = "D_ROLE,D_USER_ROLE";
         FastAutoGenerator.create(url, username, password)
                 .globalConfig(builder -> {
                     builder.author("wzh") // 设置作者
-                            // .enableSwagger() // 开启 swagger 模式
-                            // .fileOverride() // 覆盖已生成文件
+                            // .enableSwagger() // 开启 swagger 模式 // .fileOverride() // 覆盖已生成文件
                             .outputDir("D:\\develop\\IDEACodes\\diary\\src\\main\\java"); // 指定输出目录
                 })
-
                 .packageConfig(builder -> {
                     builder.parent("com.wzh.diary") // 设置父包名
                             .moduleName(moduleName) // 设置父包模块名

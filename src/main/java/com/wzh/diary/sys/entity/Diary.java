@@ -3,6 +3,7 @@ package com.wzh.diary.sys.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -15,7 +16,7 @@ import java.util.Date;
  * @author wzh
  * @since 2023-09-12
  */
-@TableName("DIARY")
+@Data
 public class Diary implements Serializable {
 
     private static final long serialVersionUID = 1L;
