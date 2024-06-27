@@ -19,7 +19,7 @@ import java.io.Serializable;
 public class RiverMsg implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
+    @TableId(type=IdType.AUTO)
     private String riverCode;
 
     private String riverName;
@@ -29,6 +29,12 @@ public class RiverMsg implements Serializable {
     private String basinName;
 
     private String notes;
+
+    public RiverMsg(String riverName, String riverSystem, String basinName) {
+        this.riverName = riverName;
+        this.riverSystem = riverSystem;
+        this.basinName = basinName;
+    }
 
     public String getRiverCode() {
         return riverCode;

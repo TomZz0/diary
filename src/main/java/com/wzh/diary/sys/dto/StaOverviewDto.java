@@ -3,7 +3,9 @@ package com.wzh.diary.sys.dto;
 import com.wzh.diary.sys.entity.StaOverview;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * @author wzh
@@ -14,5 +16,6 @@ import java.util.Date;
 public class StaOverviewDto extends StaOverview {
     private String staSort;
     private String address;
-    private Date buildTime;
+    private LocalDate buildTime;
+    private String riverName;
 }

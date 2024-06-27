@@ -4,15 +4,13 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.wzh.diary.sys.entity.Role;
-import com.wzh.diary.sys.entity.User;
-import com.wzh.diary.sys.entity.UserDto;
-import com.wzh.diary.sys.entity.UserRole;
+import com.wzh.diary.sys.entity.*;
 import com.wzh.diary.sys.mapper.UserMapper;
 import com.wzh.diary.sys.service.IRoleService;
 import com.wzh.diary.sys.service.IUserRoleService;
 import com.wzh.diary.sys.service.IUserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wzh.diary.sys.util.BaseContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -55,6 +53,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         User one = getOne(queryWrapper);
         //空值判断
         if (one == null) return null;
+        BaseContext.saveUser(one);
+        System.out.println("=============="+BaseContext.getUser());
         //不为空 生成token并存入redis
         String key = "user:" + UUID.randomUUID();
         //存入 redis
@@ -62,7 +62,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 CopyOptions.create().
                         setIgnoreNullValue(true).
                         setFieldValueEditor((fieldName, fieldValue) -> fieldValue.toString()));
-        stringRedisTemplate.opsForHash().putAll(key,userMap);
+        stringRedisTemplate.opsForHash().putAll(key, userMap);
         //d 设置有效期
         stringRedisTemplate.expire(key, 30L, TimeUnit.MINUTES);
         //创建map
@@ -72,26 +72,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
-    public Map<String,Object> getUserInfo(String token) {
+    public Map<String, Object> getUserInfo(String token) {
         //通过redis查询存入的user
         Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries(token);
-        User user = BeanUtil.mapToBean(entries, User.class,true);
+        User user = BeanUtil.mapToBean(entries, User.class, true);
         System.out.println(user);
         //创建返回map
-        Map<String,Object> map = new HashMap<>();
-        map.put("name",user.getUsername());
-        map.put("avatar",user.getAvatarUrl());
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", user.getUsername());
+        map.put("avatar", user.getAvatarUrl());
         //获取角色
         LambdaQueryWrapper<UserRole> userRoleLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userRoleLambdaQueryWrapper.eq(UserRole::getUserId,user.getId());
+        userRoleLambdaQueryWrapper.eq(UserRole::getUserId, user.getId());
         UserRole one = userRoleService.getOne(userRoleLambdaQueryWrapper);
         LambdaQueryWrapper<Role> roleLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        roleLambdaQueryWrapper.eq(Role::getRoleId,one.getRoleId());
+        roleLambdaQueryWrapper.eq(Role::getRoleId, one.getRoleId());
         Role one1 = roleService.getOne(roleLambdaQueryWrapper);
 
         List<String> roleNameByUserId = new ArrayList<>();
         roleNameByUserId.add(one1.getRoleName());
-        map.put("roles",roleNameByUserId);
+        map.put("roles", roleNameByUserId);
         return map;
     }
 
@@ -121,10 +121,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             UserRole one = userRoleService.getOne(userRoleLambdaQueryWrapper);
             if (one == null) continue;
             Long roleId = one.getRoleId();
-            System.out.println("roleId="+roleId);
+            System.out.println("roleId=" + roleId);
             //通过角色id查询角色
             LambdaQueryWrapper<Role> roleLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            roleLambdaQueryWrapper.eq(Role::getRoleId,roleId);
+            roleLambdaQueryWrapper.eq(Role::getRoleId, roleId);
             Role role = roleService.getOne(roleLambdaQueryWrapper);
             //创建dto对象返回
             UserDto userDto = new UserDto();
@@ -143,23 +143,48 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     @Transactional
-    public void add(UserDto userDto) {
+    public R add(UserDto userDto) {
+        if (userDto.getRoleName() == null){
+            userDto.setRoleName("user");
+        }
+        LambdaQueryWrapper<User>userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userLambdaQueryWrapper.eq(User::getUsername,userDto.getUsername());
+        User one1 = getOne(userLambdaQueryWrapper);
+        if (one1 != null){
+            return R.error("用户已存在");
+        }
         //写入用户表
         User user = new User();
-        BeanUtil.copyProperties(userDto,user);
+        BeanUtil.copyProperties(userDto, user);
+        user.setEmail(user.getUsername()+"@qq.com");
         user.setRegistrationDate(new Date());
         user.setAvatarUrl("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMFFVQMHUSE9HDX0UJfDkFju5LIrxS45PiHbsyk8hWzg&s");
         this.save(user);
         //查询role id
         String role = userDto.getRoleName();
         LambdaQueryWrapper<Role> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(StringUtils.hasLength(role),Role::getRoleName,role);
+        queryWrapper.eq(StringUtils.hasLength(role), Role::getRoleName, role);
         Role one = roleService.getOne(queryWrapper);
         Long roleId = one.getRoleId();
         //创建userrole对象 写入表
         UserRole userRole = new UserRole();
-        userRole.setUserId( user.getId());
+        userRole.setUserId(user.getId());
         userRole.setRoleId(roleId);
         userRoleService.save(userRole);
+        return R.successWithMsg("新增用户成功");
     }
+
+    @Override
+    public R<String> update(UserDto userDto) {
+        String username = userDto.getUsername();
+        LambdaQueryWrapper<User>userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userLambdaQueryWrapper.eq(User::getUsername,username);
+        User one = getOne(userLambdaQueryWrapper);
+        if (one!=null){
+            return R.error("用户名已存在");
+        }
+        updateById(userDto);
+        return R.successWithMsg("修改成功");
+    }
+
 }

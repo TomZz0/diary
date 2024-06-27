@@ -4,16 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wzh.diary.sys.dto.StaOverviewDto;
 import com.wzh.diary.sys.entity.*;
-import com.wzh.diary.sys.service.IStaLocationService;
-import com.wzh.diary.sys.service.IStaOverviewService;
-import com.wzh.diary.sys.service.ITestProEvolutionService;
-import com.wzh.diary.sys.service.ITestProMsgService;
+import com.wzh.diary.sys.service.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -43,6 +37,15 @@ public class StaOverviewController {
 
     @Autowired
     private ITestProMsgService testProMsgService;
+
+    @Autowired
+    private IStaMgtMsgEvolutionService mgtMsgEvolutionService;
+
+    @Autowired
+    private IRiverMsgService riverMsgService;
+
+    @Autowired
+    private IStaBasicMsgService basicMsgService;
 
     @GetMapping("/page")
     public R<Page<StaOverviewDto>> getStaInfo(Integer pageNo, Integer pageSize,
@@ -125,6 +128,19 @@ public class StaOverviewController {
             StaLocation one = staLocationService.getOne(locationLambdaQueryWrapper);
             //设置建站地址
             staOverviewDto.setAddress(one.getAddress());
+            //设置河流流域名称
+            LambdaQueryWrapper<StaMgtMsgEvolution> mgtMsgEvolutionWrapper = new LambdaQueryWrapper<>();
+            mgtMsgEvolutionWrapper.eq(StaMgtMsgEvolution::getObjCode,staOverview.getObjCode());
+            StaMgtMsgEvolution staMgtMsgEvolution = mgtMsgEvolutionService.getOne(mgtMsgEvolutionWrapper);
+            LambdaQueryWrapper<RiverMsg> riverMsgWrapper = new LambdaQueryWrapper<>();
+            riverMsgWrapper.eq(RiverMsg::getRiverCode,staMgtMsgEvolution.getRiverCode());
+            RiverMsg riverMsg = riverMsgService.getOne(riverMsgWrapper);
+            staOverviewDto.setRiverName(riverMsg.getRiverName());
+            //设置建站日期
+            LambdaQueryWrapper<StaBasicMsg> basicMsgLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            basicMsgLambdaQueryWrapper.eq(StaBasicMsg::getStaCode,staOverview.getStaCode());
+            StaBasicMsg basicMsg = basicMsgService.getOne(basicMsgLambdaQueryWrapper);
+            staOverviewDto.setBuildTime(basicMsg.getBuildTime());
             //将其他staOverview信息拷贝到dto对象
             BeanUtils.copyProperties(staOverview, staOverviewDto);
             //添加到page中
@@ -132,6 +148,21 @@ public class StaOverviewController {
         }
         dtoInfo.setRecords(list);
         return R.success(dtoInfo);
+    }
+
+    @PostMapping("/add")
+    public R<String> addUser(@RequestBody StaOverviewDto staOverviewDto){
+        return staOverviewService.addSta(staOverviewDto);
+    }
+
+    @PostMapping("/modify")
+    public R<String> modifySta(@RequestBody StaOverviewDto staOverviewDto){
+        return staOverviewService.modifySta(staOverviewDto);
+    }
+
+    @DeleteMapping("/delete")
+    public R<String> delete(@RequestParam("staCode") String staCode){
+        return staOverviewService.delete(staCode);
     }
     // @GetMapping("/page")
     // public R<Page<StaOverview>> getStaInfo(Integer pageNo, Integer pageSize,

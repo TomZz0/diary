@@ -1,5 +1,7 @@
 package com.wzh.diary.sys.entity;
 
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -7,6 +9,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -18,6 +21,13 @@ import java.time.LocalDate;
  */
 @Data
 public class StaMgtMsgEvolution implements Serializable {
+    public StaMgtMsgEvolution(String objCode, String riverCode) {
+        this.objCode = objCode;
+        this.riverCode = riverCode;
+        this.startTime = LocalDate.now();
+        this.mgtWay = "驻测";
+        this.mgtDepartment = "长江委水文局";
+    }
 
     private static final long serialVersionUID = 1L;
     private String objCode;

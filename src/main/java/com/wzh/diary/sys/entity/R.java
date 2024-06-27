@@ -19,8 +19,16 @@ public class R<T> implements Serializable {
 
     private T data; //数据
 
-    private Map map = new HashMap(); //动态数据
+    private Integer userType;
 
+    private Map map = new HashMap(); //动态数据
+    public static <T> R<T> success(T object,Integer userType) {
+        R<T> r = new R<T>();
+        r.data = object;
+        r.code = 20000;
+        r.userType = userType;
+        return r;
+    }
     public static <T> R<T> success(T object) {
         R<T> r = new R<T>();
         r.data = object;

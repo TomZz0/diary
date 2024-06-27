@@ -18,6 +18,10 @@ import java.math.BigDecimal;
  */
 @Data
 public class StaLocation implements Serializable {
+    public StaLocation(String objCode, String address) {
+        this.objCode = objCode;
+        this.address = address;
+    }
 
     private static final long serialVersionUID = 1L;
     private String objCode;

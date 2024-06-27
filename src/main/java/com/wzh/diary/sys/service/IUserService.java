@@ -1,5 +1,6 @@
 package com.wzh.diary.sys.service;
 
+import com.wzh.diary.sys.entity.R;
 import com.wzh.diary.sys.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wzh.diary.sys.entity.UserDto;
@@ -24,5 +25,7 @@ public interface IUserService extends IService<User> {
 
     Map<String, Object> getMap(String username, String email, Long pageNo, Long pageSize);
 
-    void add(UserDto userDto);
+    R add(UserDto userDto);
+
+    R<String> update(UserDto userDto);
 }

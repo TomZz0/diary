@@ -18,6 +18,10 @@ import java.time.LocalDate;
  */
 @Data
 public class TestProEvolution implements Serializable {
+    public TestProEvolution(String staCode, String proCode) {
+        this.staCode = staCode;
+        this.proCode = proCode;
+    }
 
     private static final long serialVersionUID = 1L;
     private String staCode;

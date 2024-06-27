@@ -2,11 +2,13 @@ package com.wzh.diary.sys.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wzh.diary.sys.entity.*;
 import com.wzh.diary.sys.service.IRoleService;
 import com.wzh.diary.sys.service.IUserRoleService;
 import com.wzh.diary.sys.service.IUserService;
+import com.wzh.diary.sys.util.BaseContext;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +51,7 @@ public class UserController {
     public R<Map<String, Object>> login(@RequestBody User user) {
         Map<String, Object> map = userService.login(user);
         if (map == null) return R.error("用户名或密码错误");
+
         return R.success(map);
     }
 
@@ -72,26 +75,31 @@ public class UserController {
                                        @RequestParam(value = "pageNo") Long pageNo,
                                        @RequestParam(value = "pageSize") Long pageSize) {
         Map<String, Object> map = userService.getMap(username, email, pageNo, pageSize);
+
+
         return R.success(map);
     }
 
     @PostMapping()
     public R<String> add(@RequestBody UserDto userDto) {
         //添加时要设置role 并添加到user——role表中 不然不会搜出来
-        userService.add(userDto);
-        return R.successWithMsg("新增成功");
+        return userService.add(userDto);
     }
+
 
     @PostMapping("/modify")
     public R<String> modify(@RequestBody UserDto userDto) {
         //添加时要设置role 并添加到user——role表中 不然不会搜出来
-        userService.updateById(userDto);
-        return R.successWithMsg("修改成功");
+        return userService.update(userDto);
+
     }
 
     @DeleteMapping("/delete")
     public R<String> delete(@RequestParam("id") Long id){
         userService.removeById(id);
+        LambdaUpdateWrapper<UserRole> userRoleLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        userRoleLambdaUpdateWrapper.eq(UserRole::getUserId,id);
+        userRoleService.remove(userRoleLambdaUpdateWrapper);
         return R.successWithMsg("删除成功");
     }
 }

@@ -18,6 +18,9 @@ import java.time.LocalDate;
  */
 @Data
 public class StaBasicMsg implements Serializable {
+    public StaBasicMsg(String staCode) {
+        this.staCode = staCode;
+    }
 
     private static final long serialVersionUID = 1L;
     private String staCode;
